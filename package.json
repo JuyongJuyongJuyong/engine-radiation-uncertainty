@@ -1,0 +1,39 @@
+{
+  "name": "engine-radiation-uncertainty",
+  "version": "0.1.0",
+  "description": "Solar radiation modeling + uncertainty quantification for the Global Rooftop Solar Potential Calculator. Physics: solar geometry, Perez anisotropic GHI->POA transposition, aerosol correction, multi-source irradiance ensembling. Math/stats: correlated Monte Carlo uncertainty propagation, Sobol sensitivity analysis.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "eslint": "^9.9.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.2.0",
+    "vitest": "^2.0.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JuyongJuyongJuyong/engine-radiation-uncertainty.git"
+  }
+}
