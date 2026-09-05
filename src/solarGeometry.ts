@@ -153,18 +153,29 @@ export interface SolarPosition {
  * since that is the convention the rest of this project uses for
  * orientation (roof azimuth, etc).
  */
-export function solarPosition(
-  lat: number,
-  lng: number,
-  date: Date,
-): SolarPosition {
-  const n = dayOfYear(date);
-  const dec = solarDeclination(n);
-  const H = hourAngle(date, lng);
+/** Altitude/azimuth pair returned by altitudeAzimuthFromHourAngle(). */
+export interface AltitudeAzimuth {
+  /** Solar altitude above the horizon, degrees (-90 to +90). */
+  altitude: number;
+  /** Solar azimuth as a compass bearing, degrees (0=North, 90=East, ...). */
+  azimuth: number;
+}
 
+/**
+ * Core horizon-coordinate transform, factored out of solarPosition() so it
+ * can be driven directly by a synthetic (declination, hour angle) pair —
+ * needed by monthlyTransposition.ts, which works in solar-time hour-angle
+ * space for a statistically representative day rather than a real UTC
+ * instant, and so has no meaningful (lng, Date) to hand to solarPosition().
+ * solarPosition() itself is just this function fed by hourAngle(date, lng).
+ *
+ * See solarPosition()'s doc comment for the derivation and sign
+ * conventions; unchanged here, just extracted.
+ */
+export function altitudeAzimuthFromHourAngle(lat: number, decDeg: number, hourAngleDeg: number): AltitudeAzimuth {
   const latRad = lat * DEG2RAD;
-  const decRad = dec * DEG2RAD;
-  const hRad = H * DEG2RAD;
+  const decRad = decDeg * DEG2RAD;
+  const hRad = hourAngleDeg * DEG2RAD;
 
   const sinAltitude =
     Math.sin(decRad) * Math.sin(latRad) +
@@ -180,7 +191,20 @@ export function solarPosition(
     Math.cos(hRad) * Math.sin(latRad) - Math.tan(decRad) * Math.cos(latRad),
   );
   const gammaS = gammaSRad * RAD2DEG; // 0 = South, +West, range (-180, 180]
-  const azimuth = ((gammaS + 180) % 360 + 360) % 360; // -> 0 = North, +East, [0, 360)
+  const azimuth = (((gammaS + 180) % 360) + 360) % 360; // -> 0 = North, +East, [0, 360)
+
+  return { altitude, azimuth };
+}
+
+export function solarPosition(
+  lat: number,
+  lng: number,
+  date: Date,
+): SolarPosition {
+  const n = dayOfYear(date);
+  const dec = solarDeclination(n);
+  const H = hourAngle(date, lng);
+  const { altitude, azimuth } = altitudeAzimuthFromHourAngle(lat, dec, H);
 
   return { dayOfYear: n, declination: dec, hourAngle: H, altitude, azimuth };
 }
